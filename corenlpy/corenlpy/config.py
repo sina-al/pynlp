@@ -1,7 +1,5 @@
-PORT = 9000
-CORENLP_PATH = '"./stanford-corenlp-full-2017-06-09/*"'
-
-DEFAULT_ANNOTATORS = 'ssplit, tokenize, pos, lemma'
-
+DEFAULT_PORT = 9000
+ENV_NAME = 'CORE_NLP'
 SERIALIZER_CLASS = 'edu.stanford.nlp.pipeline.ProtobufAnnotationSerializer'
 SERVER_CLASS = 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer'
+DEFAULT_ANNOTATORS = 'tokenize, ssplit, pos, lemma, ner'
