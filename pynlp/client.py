@@ -1,7 +1,8 @@
-from corenlpy.config import SERIALIZER_CLASS, DEFAULT_PORT, DEFAULT_ANNOTATORS
+from pynlp.config import SERIALIZER_CLASS, DEFAULT_PORT, DEFAULT_ANNOTATORS
 import requests
 import json
 import corenlp_protobuf as core
+from pynlp.wrapper import Doc
 
 
 SERIALIZE_PROPS = {
@@ -53,5 +54,4 @@ class StanfordCoreNLP:
         doc = core.Document()
         proto = annotate(document.encode('UTF-8'), self._annotators, self._options)
         core.parseFromDelimitedString(doc, proto)
-        return doc
-
+        return Doc(doc)

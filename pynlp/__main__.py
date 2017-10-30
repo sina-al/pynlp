@@ -1,4 +1,4 @@
-from corenlpy.config import SERVER_CLASS, DEFAULT_PORT, ENV_NAME
+from pynlp.config import SERVER_CLASS, DEFAULT_PORT, ENV_NAME
 from operator import add
 from functools import reduce
 import os
@@ -16,4 +16,5 @@ def run_server(port=DEFAULT_PORT, memory=4, timeout=30000):
 
 
 if __name__ == '__main__':
+    # TODO: command line arguments.
     run_server()

@@ -1,7 +1,10 @@
-from enum import Enum
+from corenlp_protobuf import writeToDelimitedString
+from corenlp_protobuf import parseFromDelimitedString
+from corenlp_protobuf import Document
 
 
-class Doc:  # TODO: parse, depparse, natlog, openie
+ # TODO: parse, depparse, natlog, openie
+class Doc:
 
     def __init__(self, proto_doc):
         self._doc = proto_doc
@@ -14,6 +17,18 @@ class Doc:  # TODO: parse, depparse, natlog, openie
 
     def __str__(self):
         return '\n'.join([str(sentence) for sentence in self])
+
+    def to_bytes(self):
+        stream = writeToDelimitedString(self._doc)
+        buf = stream.getvalue()
+        stream.close()
+        return buf
+
+    @classmethod
+    def from_bytes(cls, protobuf):
+        doc = Document()
+        parseFromDelimitedString(doc, protobuf)
+        return cls(doc)
 
     @property
     def ents(self):
