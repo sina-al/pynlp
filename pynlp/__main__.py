@@ -1,4 +1,5 @@
 from pynlp.config import SERVER_CLASS, DEFAULT_PORT, ENV_NAME
+from argparse import ArgumentParser
 from operator import add
 from functools import reduce
 import os
@@ -16,5 +17,16 @@ def run_server(port=DEFAULT_PORT, memory=4, timeout=30000):
 
 
 if __name__ == '__main__':
-    # TODO: command line arguments.
-    run_server()
+
+    parser = ArgumentParser(description='Launch StandfordCoreNLP Server.')
+
+    parser.add_argument('-p', '--port', metavar='N', type=int, nargs=1,
+                        help='port number to server.', default=DEFAULT_PORT)
+    parser.add_argument('-m', '--memory', metavar='M', type=int, nargs=1,
+                        help='memory (gb) allocated to JVM.', default=4)
+    parser.add_argument('-t', '--timeout', metavar='S', type=int, nargs=1,
+                        help='server timeout.', default=15000)
+
+    args = parser.parse_args()
+
+    run_server(port=args.port, memory=args.memory, timeout=args.timeout)
