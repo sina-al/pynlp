@@ -103,10 +103,9 @@ for token in first_sentence:
 ```
 Output:
 ```
-are VBP
-investigating VBG
-made VBN
-understands VBZ
+was VBD be
+assaulted VBN assault
+according VBG accord
 ```
 #### Lemmatization
 Using the same words, lets see the lemmas.
@@ -117,10 +116,9 @@ for token in first_sentence:
 ```
 Output:
 ```
-are -> be
-investigating -> investigate
-made -> make
-understands -> understand
+was -> be
+assaulted -> assault
+according -> accord
 ```
 #### Coreference resultion
 No coreference resolution available in spaCy? No problem. Let's use pynlp to find the first `CorefChain` in the text.
