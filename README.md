@@ -1,6 +1,10 @@
 # pynlp
 A *pythonic* wrapper for Stanford CoreNLP.
 
+<p align="center">
+        <img src="https://media.giphy.com/media/l2QDNvOnIK6H2CRgY/giphy.gif" >
+</p>
+
 ## Description
 This library provides a Python interface to [Stanford CoreNLP](https://stanfordnlp.github.io/CoreNLP/) built over [`corenlp_protobuf`](https://github.com/stanfordnlp/python-corenlp-protobuf). 
 
