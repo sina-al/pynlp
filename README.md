@@ -103,9 +103,9 @@ for token in first_sentence:
 ```
 Output:
 ```
-was VBD be
-assaulted VBN assault
-according VBG accord
+was VBD
+assaulted VBN
+according VBG
 ```
 #### Lemmatization
 Using the same words, lets see the lemmas.
