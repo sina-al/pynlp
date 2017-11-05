@@ -1,8 +1,28 @@
 # pynlp
 A *pythonic* wrapper for Stanford CoreNLP.
 
+## Description
+This library provides a Python interface to [Stanford CoreNLP](https://stanfordnlp.github.io/CoreNLP/) built over [`corenlp_protobuf`](https://github.com/stanfordnlp/python-corenlp-protobuf). 
+
+## Installation
+1. Download Stanford CoreNLP from the official [download page](https://stanfordnlp.github.io/CoreNLP/download.html).
+2. Unzip the file and set your `CORENLP_PATH` environment variable to point to the directory.
+3. Install `pynlp` from pip
+```
+pip3 install pynlp
+```
 
 ## Usage
+
+### Launch the server
+Lauch the `StanfordCoreNLPServer` using the instruction given [here](https://stanfordnlp.github.io/CoreNLP/corenlp-server.html). *Alternatively*, simply run the module.
+```
+python3 -m pynlp
+```
+*By default, this lauches the server on localhost using port 9000 and 4gb ram for the JVM. Use the `--help` option for instruction on custom configurations.*
+
+### Example usage
+
 Let's start off with an excerpt from a CNN article.
 ```python
 text = ('GOP Sen. Rand Paul was assaulted in his home in Bowling Green, Kentucky, on Friday, '
@@ -134,3 +154,5 @@ Output:
 ```
 Out[8]: [<Quote: "intentionally assaulted">]
 ```
+
+*More to come soon...*
