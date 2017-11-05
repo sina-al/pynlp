@@ -23,14 +23,15 @@ def _corenlp_request(input_data, props, port=DEFAULT_PORT):
 
 
 def _annotate_binary(text, annotators=DEFAULT_ANNOTATORS, options=None, port=DEFAULT_PORT):
+    text = text.encode('utf-8')
     props = dict(SERIALIZE_PROPS, **{'annotators': annotators})
     if options:
         props = dict(props, **options)
-    return _corenlp_request(input_data=text.encode('utf-8'), props=props, port=port).content
+    return _corenlp_request(input_data=text, props=props, port=port).content
 
 
 def _annotate(text, annotators=DEFAULT_ANNOTATORS, options=None, port=DEFAULT_PORT):
-    return from_bytes(_annotate_binary(text.encode('utf-8'), annotators, options, port))
+    return from_bytes(_annotate_binary(text, annotators, options, port))
 
 
 def from_bytes(protobuf):
@@ -39,6 +40,7 @@ def from_bytes(protobuf):
     return doc
 
 
+# doesn't work.
 def to_bytes(proto_doc):
     stream = core.writeToDelimitedString(proto_doc)
     buf = stream.getvalue()
@@ -49,6 +51,7 @@ def to_bytes(proto_doc):
 def stanford_core_nlp(annotators=DEFAULT_ANNOTATORS, options=None, port=DEFAULT_PORT):
     def annotate(text):
         return _annotate(text, annotators, options, port)
+    return annotate
 
 
 class StanfordCoreNLP:
@@ -56,16 +59,14 @@ class StanfordCoreNLP:
     def __init__(self, port=DEFAULT_PORT, annotators=DEFAULT_ANNOTATORS, options=None):
         self._annotators = annotators
         self._options = options
-        self.port = port
+        self._port = port
 
-    def __call__(self, *args, **kwargs):
-        docs = [self.annotate(doc) for doc in args]
-        return docs if len(docs) > 1 else docs[0]
+    def __call__(self, text):
+        return self.annotate(text)
 
     @property
     def annotators(self):
         return self._annotators.split(', ')
 
-    def annotate(self, document):
-        proto_doc = _annotate(document.encode('utf-8'), self._annotators, self._options)
-        return Document(proto_doc)
+    def annotate(self, text):
+        return Document(_annotate(text, self._annotators, self._options, self._port))

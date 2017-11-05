@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pynlp import client
 
 
 class Document:
@@ -23,12 +24,19 @@ class Document:
         if isinstance(item, int) and item >= 0:
             return Sentence(self._doc, self._doc.sentence[item])
 
+    @classmethod
+    def from_bytes(cls, protobuf):
+        return Document(client.from_bytes(protobuf))
+
+    def to_bytes(self):
+        return client.to_bytes(self._doc)
+
     @property
     def text(self):
         return self._doc.text
 
     @property
-    def named_entities(self):
+    def entities(self):
         for proto_mention in self._doc.mentions:
             yield NamedEntity(self._doc, proto_mention)
 
@@ -38,7 +46,7 @@ class Document:
             yield CorefChain(self._doc, proto_coref)
 
     def coref_chain(self, chain_id):
-        for proto_chain in self._doc.corefChains:
+        for proto_chain in self._doc.corefChain:
             if proto_chain.chainID == chain_id:
                 return CorefChain(self._doc, proto_chain)
         raise IndexError('No CorefChain with id={} exits.'.format(chain_id))
@@ -89,7 +97,7 @@ class Sentence(Span):
             yield Token(self._doc, self._sentence, proto_token)
 
     @property
-    def named_entities(self):
+    def entities(self):
         for proto_mention in self._sentence.mentions:
             yield NamedEntity(self._doc, proto_mention)
 
@@ -235,7 +243,7 @@ class CorefChain:
                     left_tag = '(' + left_tag
                     right_tag = ')' + right_tag
                 words[ref.beginIndex] = left_tag + words[ref.beginIndex]
-                words[ref.endIndex] += right_tag
+                words[ref.endIndex - 1] += right_tag
 
             for index, word in enumerate(words):
                 string += word + whitespace[index]
@@ -257,7 +265,7 @@ class CorefChain:
             raise StopIteration
 
     def __getitem__(self, item):
-        if not isinstance(item, str):
+        if not isinstance(item, int):
             raise KeyError('Index by coref_id for coreference.')
         for proto_mention in self._coref.mention:
             if proto_mention.mentionID == item:
@@ -356,3 +364,14 @@ class Quote(Span):
     @property
     def text(self):
         return self._quote.text[1:-1]
+
+
+class Triple:
+
+    def __init__(self, proto_doc, proto_sentence, proto_triple):
+        self._doc = proto_doc
+        self._sentence = proto_sentence
+        self._triple = proto_triple
+
+    # todo
+
