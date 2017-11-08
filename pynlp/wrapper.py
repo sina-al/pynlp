@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from pynlp import client
 
 
 class Document:
@@ -26,10 +25,10 @@ class Document:
 
     @classmethod
     def from_bytes(cls, protobuf):
-        return Document(client.from_bytes(protobuf))
+        raise NotImplementedError('Method under development') # todo
 
     def to_bytes(self):
-        return client.to_bytes(self._doc)
+        return NotImplementedError('Method under development') # todo
 
     @property
     def text(self):
