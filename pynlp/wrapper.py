@@ -159,16 +159,18 @@ class Token:
 
     @property
     def head(self): # Not efficient either.
-        for edge in self._sentence.basicDependencies.edge:
-            if self._token.endIndex == edge.target:
-                proto_token = self._sentence.token[edge.source]
-                return Token(self._doc, self._sentence, proto_token)
+        raise NotImplementedError('Method under development.')
+        # for edge in self._sentence.basicDependencies.edge:
+        #     if self._token.endIndex == edge.target:
+        #         proto_token = self._sentence.token[edge.source]
+        #         return Token(self._doc, self._sentence, proto_token)
 
     @property
     def dependency(self): # Not efficient. Should probably just fetch graph from sentence.
-        for edge in self._sentence.basicDependencies.edge:
-            if self._token.endIndex == edge.target:
-                return edge.dep
+        raise NotImplementedError('Method under development.')
+        # for edge in self._sentence.basicDependencies.edge:
+        #     if self._token.endIndex == edge.target:
+        #         return edge.dep
 
     # todo: enhanced, enhancedplusplus dependencies
 
