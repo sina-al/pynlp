@@ -12,6 +12,7 @@ This library provides a Python interface to [Stanford CoreNLP](https://stanfordn
 1. Download Stanford CoreNLP from the official [download page](https://stanfordnlp.github.io/CoreNLP/download.html).
 2. Unzip the file and set your `CORE_NLP` environment variable to point to the directory.
 3. Install `pynlp` from pip
+4. Install `corenlp_protobuf` from pip
 ```
 pip3 install pynlp
 ```
