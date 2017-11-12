@@ -1,3 +1,4 @@
 corenlp-protobuf==3.7.1
 protobuf==3.4.0
+requests==2.18.4
 six==1.11.0

@@ -2,10 +2,15 @@ from setuptools import setup
 
 setup(
     name='pynlp',
-    version='0.3.4.1',
+    version='0.3.4.2',
     packages=['pynlp'],
+    install_requires=[
+        'corenlp-protobuf==3.7.1',
+        'protobuf==3.4.0',
+        'requests==2.18.4',
+        'six==1.11.0'
+    ],
     url='http://github.com/sina-al/pynlp',
-    download_url='https://github.com/sina-al/corenlpy/archive/0.2.0.tar.gz',
     license='GNU General Public License, version 2',
     author='Sina',
     author_email='s.aleyaasin@gmail.com',
