@@ -176,6 +176,10 @@ class Token:
         return self._token.lemma
 
     @property
+    def sentence(self):
+        return Sentence(self._doc, self._sentence)
+
+    @property
     def head(self): # Not efficient either.
         raise NotImplementedError('Method under development.')
         # for edge in self._sentence.basicDependencies.edge:
@@ -391,11 +395,41 @@ class Triple:
         self._doc = proto_doc
         self._sentence = proto_sentence
         self._triple = proto_triple
-
     # todo
 
 
-from pynlp.trees import TokenVertex, DependencyEdge
+class TokenVertex(Token):
+
+    def __init__(self, proto_doc, proto_sentence, proto_token):
+        super().__init__(proto_doc, proto_sentence, proto_token)
+
+    def __str__(self):
+        return '-({})-'.format(super().__str__())
+
+
+class DependencyEdge:
+
+    def __init__(self, dependency, gov_vertex, dep_vertex):
+        self._dependency = dependency
+        self._governor = gov_vertex
+        self._dependent = dep_vertex
+
+    def __str__(self):
+        return '{}-[{}]->{}'.format(str(self._governor),
+                                    self._dependency,
+                                    str(self._dependent))
+
+    @property
+    def dependency(self):
+        return self._dependency
+
+    @property
+    def governor(self):
+        return self._governor
+
+    @property
+    def dependent(self):
+        return self._dependent
 
 
 class DependencyTree:
@@ -406,29 +440,48 @@ class DependencyTree:
         self._dependency = proto_dependency
         self._vertices = self._init_vertices()
         self._edges = self._init_edges()
-        self._root = self._init_root()
+        proto_root = self._sentence.token[self._dependency.root[0] - 1]
+        self._root = TokenVertex(self._doc, self._sentence, proto_root)
 
     def _init_vertices(self):
         proto_tokens = self._sentence.token
         proto_nodes = (proto_tokens[n.index - 1] for n in self._dependency.node)
-        tokens = (Token(self._doc, self._sentence, node) for node in proto_nodes)
-        return tuple(TokenVertex(token) for token in tokens)
-
-    def _init_root(self):
-        proto_root = self._sentence.token[self._dependency.root[0] - 1]
-        return TokenVertex(Token(self._doc, self._sentence, proto_root))
+        return tuple(TokenVertex(self._doc, self._sentence, node) for node in proto_nodes)
 
     def _init_edges(self):
         tokens = self._sentence.token
-        edges = [DependencyEdge('ROOT', TokenVertex('ROOT'), self._root)]
+        proto_root = self._sentence.token[self._dependency.root[0] - 1]
+        root = TokenVertex(self._doc, self._sentence, proto_root)
+        edges = [DependencyEdge('ROOT', None, root)]
         for proto_edge in self._dependency.edge:
             proto_source = tokens[proto_edge.source - 1]
             proto_target = tokens[proto_edge.target - 1]
             dependency = proto_edge.dep
-            parent = Token(self._doc, self._sentence, proto_source)
-            child = Token(self._doc, self._sentence, proto_target)
-            edges.append(DependencyEdge(dependency, TokenVertex(parent), TokenVertex(child)))
+            governor = TokenVertex(self._doc, self._sentence, proto_source)
+            dependent = TokenVertex(self._doc, self._sentence, proto_target)
+            edges.append(DependencyEdge(dependency, governor, dependent))
         return tuple(edges)
+
+    def __getitem__(self, item):
+        return [edge for edge in self._edges if edge.dependency == item]
+
+    def subtree(self, token_vertex):
+        pass
+
+    def governor_of(self, token_vertex):
+        pass
+
+    def dependent_of(self, token_vertex):
+        pass
+
+    def siblings(self, token_vertex):
+        pass
+
+    def is_ancestor(self, descendant, ancestor):
+        pass
+
+    def common_ancestor(self, vertex1, vertex2):
+        pass
 
     @property
     def vertices(self):
