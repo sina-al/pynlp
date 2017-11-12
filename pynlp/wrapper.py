@@ -101,6 +101,21 @@ class Sentence(Span):
             yield NamedEntity(self._doc, proto_mention)
 
     @property
+    def dependencies(self):
+        basic_dep = self._sentence.basicDependencies
+        return DependencyTree(self._doc, self._sentence, basic_dep)
+
+    @property
+    def e_dependencies(self):
+        enhanced_dep = self._sentence.enhancedDependencies
+        return DependencyTree(self._doc, self._sentence, enhanced_dep)
+
+    @property
+    def epp_dependencies(self):
+        enhanced_dep_plusplus = self._sentence.enhancedPlusPlusDependencies
+        return DependencyTree(self._doc, self._sentence, enhanced_dep_plusplus)
+
+    @property
     def coref_mentions(self):
         # todo: implement this
         raise NotImplementedError('Method under development.')
@@ -376,3 +391,46 @@ class Triple:
 
     # todo
 
+
+from pynlp.trees import TokenVertex, DependencyEdge
+
+
+class DependencyTree:
+
+    def __init__(self, proto_doc, proto_sentence, proto_dependency):
+        self._doc = proto_doc
+        self._sentence = proto_sentence
+        self._dependency = proto_dependency
+        self._vertices = self._init_vertices()
+        self._edges = self._init_edges()
+        self._root = self._init_root()
+
+    def _init_vertices(self):
+        proto_tokens = self._sentence.token
+        proto_nodes = (proto_tokens[n.index - 1] for n in self._dependency.node)
+        tokens = (Token(self._doc, self._sentence, node) for node in proto_nodes)
+        return tuple(TokenVertex(token) for token in tokens)
+
+    def _init_root(self):
+        proto_root = self._sentence.token[self._dependency.root[0] - 1]
+        return TokenVertex(Token(self._doc, self._sentence, proto_root))
+
+    def _init_edges(self):
+        tokens = self._sentence.token
+        edges = [DependencyEdge('ROOT', TokenVertex('ROOT'), self._root)]
+        for proto_edge in self._dependency.edge:
+            proto_source = tokens[proto_edge.source - 1]
+            proto_target = tokens[proto_edge.target - 1]
+            dependency = proto_edge.dep
+            parent = Token(self._doc, self._sentence, proto_source)
+            child = Token(self._doc, self._sentence, proto_target)
+            edges.append(DependencyEdge(dependency, TokenVertex(parent), TokenVertex(child)))
+        return tuple(edges)
+
+    @property
+    def vertices(self):
+        return [vertex for vertex in self._vertices]
+
+    @property
+    def edges(self):
+        return [edge for edge in self._edges]
