@@ -15,6 +15,10 @@ This library provides a Python interface to [Stanford CoreNLP](https://stanfordn
 ```
 pip3 install pynlp
 ```
+4. Install `corenlp_protobuf` from pip
+```
+pip3 install corenlp_protobuf
+```
 
 ## Usage
 
