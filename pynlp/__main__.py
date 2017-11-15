@@ -20,8 +20,10 @@ if __name__ == '__main__':
 
     parser = ArgumentParser(description='Launch StandfordCoreNLP Server.')
 
+    parser.add_argument('-h', '--host', metavar='HOST', help='server host address',
+                        default='localhost')
     parser.add_argument('-p', '--port', metavar='PORT', type=int,
-                        help='port number to server.', default=DEFAULT_PORT)
+                        help='server port number.', default=DEFAULT_PORT)
     parser.add_argument('-m', '--memory', metavar='GB', type=int,
                         help='memory (gb) allocated to JVM.', default=4)
     parser.add_argument('-t', '--timeout', metavar='TIME', type=int,
