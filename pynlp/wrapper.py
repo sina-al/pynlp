@@ -23,6 +23,9 @@ class Document:
         if isinstance(item, int) and item >= 0:
             return Sentence(self._doc, self._doc.sentence[item])
 
+    def __eq__(self, other):
+        return self._doc == other._doc
+
     @classmethod
     def from_bytes(cls, protobuf):
         raise NotImplementedError('Method under development') # todo
@@ -85,6 +88,9 @@ class Sentence(Span):
             self._sentence.sentenceIndex,
             self._sentence.token[-1].tokenEndIndex
         )
+
+    def __eq__(self, other):
+        return self._sentence == other._sentence and self._doc == other._doc
 
     def __getitem__(self, item):
         return Token(self._doc, self._sentence, self._sentence.token[item])
@@ -155,6 +161,16 @@ class Token:
             self._token.beginIndex
         )
 
+    def __eq__(self, other):
+        return self._token == other._token and \
+               self._sentence == other._sentence and \
+               self._doc == other._doc
+
+    def __hash__(self):  # this is not foolproof!
+        return hash((self._token.originalText,
+                     self._token.beginChar,
+                     self._token.endChar))
+
     @property
     def word(self):
         return self._token.word
@@ -179,22 +195,45 @@ class Token:
     def sentence(self):
         return Sentence(self._doc, self._sentence)
 
-    @property
-    def head(self): # Not efficient either.
-        raise NotImplementedError('Method under development.')
-        # for edge in self._sentence.basicDependencies.edge:
-        #     if self._token.endIndex == edge.target:
-        #         proto_token = self._sentence.token[edge.source]
-        #         return Token(self._doc, self._sentence, proto_token)
+
+class Root(Token):
+
+    def __init__(self, proto_doc, proto_sentence):
+        super().__init__(proto_doc, proto_sentence, None)
+
+    def __eq__(self, other):
+        return self._sentence == other._sentence and self._doc == other._doc
+
+    def __hash__(self):
+        return hash('ROOT')
+
+    def __str__(self):
+        return 'ROOT'
+
+    def __repr__(self):
+        return '<Token: [sentence: {}, index: ROOT]>'.format(
+            self._sentence.sentenceIndex
+        )
 
     @property
-    def dependency(self): # Not efficient. Should probably just fetch graph from sentence.
-        raise NotImplementedError('Method under development.')
-        # for edge in self._sentence.basicDependencies.edge:
-        #     if self._token.endIndex == edge.target:
-        #         return edge.dep
+    def word(self):
+        return 'ROOT'
 
-    # todo: enhanced, enhancedplusplus dependencies
+    @property
+    def word_ws(self):
+        return 'ROOT'
+
+    @property
+    def pos(self):
+        return 'ROOT'
+
+    @property
+    def ner(self):
+        return 'ROOT'
+
+    @property
+    def lemma(self):
+        return 'ROOT'
 
 
 class NamedEntity(Span):
@@ -318,8 +357,11 @@ class Coreference(Span):
 
     def __repr__(self):
         ref_id = self._coref_chain.mention[self._coref_chain.representative].mentionID
-        return '<Coreference: [coref_id: {}, chain_id: {}, referent: {}]>'.format(
-            self._coref_mention.mentionID, self._coref_chain.chainID, ref_id)
+        return '<{}: [coref_id: {}, chain_id: {}, referent: {}]>'.format(
+            self.__class__.__name__,
+            self._coref_mention.mentionID,
+            self._coref_chain.chainID,
+            ref_id)
 
     def __str__(self):
         return ' '.join([token.originalText for token in self._tokens])
@@ -398,15 +440,6 @@ class Triple:
     # todo
 
 
-class TokenVertex(Token):
-
-    def __init__(self, proto_doc, proto_sentence, proto_token):
-        super().__init__(proto_doc, proto_sentence, proto_token)
-
-    def __str__(self):
-        return '-({})-'.format(super().__str__())
-
-
 class DependencyEdge:
 
     def __init__(self, dependency, gov_vertex, dep_vertex):
@@ -415,9 +448,9 @@ class DependencyEdge:
         self._dependent = dep_vertex
 
     def __str__(self):
-        return '{}-[{}]->{}'.format(str(self._governor),
-                                    self._dependency,
-                                    str(self._dependent))
+        return '({})-[{}]->({})'.format(str(self._governor),
+                                        self._dependency,
+                                        str(self._dependent))
 
     @property
     def dependency(self):
@@ -438,55 +471,70 @@ class DependencyTree:
         self._doc = proto_doc
         self._sentence = proto_sentence
         self._dependency = proto_dependency
-        self._vertices = self._init_vertices()
-        self._edges = self._init_edges()
-        proto_root = self._sentence.token[self._dependency.root[0] - 1]
-        self._root = TokenVertex(self._doc, self._sentence, proto_root)
+        root = Root(self._doc, self._sentence)
+        root_gov = proto_sentence.token[proto_dependency.root[0] - 1]
+        root_dep = Token(self._doc, self._sentence, root_gov)
+        self._governors = {root_dep: root}
+        self._dependents = {}
+        self._dependencies = {root_dep: '-ROOT-'}
+        tokens = proto_sentence.token
+        for proto_edge in proto_dependency.edge:
+            source = Token(proto_doc, proto_sentence, tokens[proto_edge.source - 1])
+            target = Token(proto_doc, proto_sentence, tokens[proto_edge.target - 1])
+            self._governors[target] = source
+            self._dependencies[target] = proto_edge.dep
+            self._dependents.setdefault(source, []).append(target)
+        for key in self._dependents:
+            self._dependents[key] = frozenset(self._dependents[key])
 
-    def _init_vertices(self):
-        proto_tokens = self._sentence.token
-        proto_nodes = (proto_tokens[n.index - 1] for n in self._dependency.node)
-        return tuple(TokenVertex(self._doc, self._sentence, node) for node in proto_nodes)
+    def __repr__(self):
+        return '<{}: [sentence: {}]>'.format(
+            self.__class__.__name__,
+            self._sentence.sentenceIndex
+        )
 
-    def _init_edges(self):
-        tokens = self._sentence.token
-        proto_root = self._sentence.token[self._dependency.root[0] - 1]
-        root = TokenVertex(self._doc, self._sentence, proto_root)
-        edges = [DependencyEdge('ROOT', None, root)]
-        for proto_edge in self._dependency.edge:
-            proto_source = tokens[proto_edge.source - 1]
-            proto_target = tokens[proto_edge.target - 1]
-            dependency = proto_edge.dep
-            governor = TokenVertex(self._doc, self._sentence, proto_source)
-            dependent = TokenVertex(self._doc, self._sentence, proto_target)
-            edges.append(DependencyEdge(dependency, governor, dependent))
-        return tuple(edges)
+    def governor_of(self, token_vertex): # todo: TEST meh
+        return self._governors[token_vertex]
 
-    def __getitem__(self, item):
-        return [edge for edge in self._edges if edge.dependency == item]
+    def dependents_of(self, token_vertex):  # todo: TEST meh
+        return self._dependents[token_vertex]
 
-    def subtree(self, token_vertex):
-        pass
+    def dependencies(self, dependency):  # todo: TEST meh
+        for target, dependency_ in self._dependencies.items():
+            if dependency_ == dependency:
+                yield DependencyEdge(dependency, self._governors[target], target)
 
-    def governor_of(self, token_vertex):
-        pass
+    def siblings_of(self, token_vertex):  # todo: TEST meh
+        return {vertex for vertex in self._dependents[self._governors[token_vertex]]
+                if vertex != token_vertex}
 
-    def dependent_of(self, token_vertex):
-        pass
+    def is_ancestor(self, descendant, ancestor): # todo: TEST meh
+        parent = descendant
+        while parent in self._governors:
+            parent = self._governors[parent]
+            if parent == ancestor:
+                return True
+        return False
 
-    def siblings(self, token_vertex):
-        pass
-
-    def is_ancestor(self, descendant, ancestor):
-        pass
-
-    def common_ancestor(self, vertex1, vertex2):
-        pass
+    def common_ancestor(self, vertex1, vertex2): # todo: TEST meh
+        parent1 = vertex1
+        parent2 = vertex2
+        while parent2 in self._governors:
+            while parent1 in self._governors:
+                parent1 = self._governors[parent1]
+                if parent1 == parent2:
+                    return parent2
+            parent2 = self._governors[parent2]
+        return None
 
     @property
     def vertices(self):
-        return [vertex for vertex in self._vertices]
+        return [vertex for vertex in self._governors.keys()]
 
     @property
     def edges(self):
-        return [edge for edge in self._edges]
+        return [DependencyEdge(self._dependencies[target], self._governors[target], target)
+                for target in self._governors.keys()]
+
+
+
