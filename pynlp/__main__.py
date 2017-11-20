@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     parser = ArgumentParser(description='Launch StandfordCoreNLP Server.')
 
-    parser.add_argument('-h', '--host', metavar='HOST', help='server host address',
+    parser.add_argument('-a', '--address', metavar='ADDR', help='server address',
                         default='localhost')
     parser.add_argument('-p', '--port', metavar='PORT', type=int,
                         help='server port number.', default=DEFAULT_PORT)
