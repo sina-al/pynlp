@@ -76,6 +76,9 @@ class Sentence(Span):
         return ''.join([(t.originalText + t.after)
                         for t in self._sentence.token])
 
+    def __len__(self):
+        return len(self._sentence)
+
     def __repr__(self):
         return '<{} : [index: {}, tokens: {}]>'.format(
             __class__.__name__,
