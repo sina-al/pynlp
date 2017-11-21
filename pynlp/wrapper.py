@@ -90,6 +90,10 @@ class Sentence(Span):
         return Token(self._doc, self._sentence, self._sentence.token[item])
 
     @property
+    def document(self):
+        return Document(self._doc)
+
+    @property
     def index(self):
         return self._sentence.sentenceIndex
 
@@ -161,6 +165,14 @@ class Token:
         return self._token.lemma
 
     @property
+    def sentence(self):
+        return Sentence(self._doc, self._sentence)
+
+    @property
+    def document(self):
+        return Document(self._doc)
+
+    @property
     def head(self): # Not efficient either.
         raise NotImplementedError('Method under development.')
         # for edge in self._sentence.basicDependencies.edge:
@@ -212,6 +224,14 @@ class NamedEntity(Span):
     @property
     def normalized_ner(self):
         return self._mention.normalizedNER
+
+    @property
+    def sentence(self):
+        return Sentence(self._doc, self._doc.sentence[self._mention.sentenceIndex])
+
+    @property
+    def document(self):
+        return Document(self._doc)
 
 
 class CorefChain:
@@ -341,6 +361,10 @@ class Coreference(Span):
     def head(self):
         return self._coref_mention.head
 
+    @property
+    def document(self):
+        return Document(self._doc)
+
 
 class Quote(Span):
 
@@ -368,6 +392,10 @@ class Quote(Span):
     @property
     def text(self):
         return self._quote.text[1:-1]
+
+    @property
+    def document(self):
+        return Document(self._doc)
 
 
 class Triple:
