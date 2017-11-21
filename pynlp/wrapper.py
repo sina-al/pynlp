@@ -486,6 +486,8 @@ class DependencyTree:
             self._dependents.setdefault(source, []).append(target)
         for key in self._dependents:
             self._dependents[key] = frozenset(self._dependents[key])
+        self._dependents[root] = [root_dep]
+        self._root = root_dep
 
     def __repr__(self):
         return '<{}: [sentence: {}]>'.format(
@@ -493,22 +495,30 @@ class DependencyTree:
             self._sentence.sentenceIndex
         )
 
-    def governor_of(self, token_vertex): # todo: TEST meh
+    @property
+    def root(self):
+        return self._root
+
+    def governor_of(self, token_vertex):
         return self._governors[token_vertex]
 
-    def dependents_of(self, token_vertex):  # todo: TEST meh
+    def dependents_of(self, token_vertex):
         return self._dependents[token_vertex]
 
-    def dependencies(self, dependency):  # todo: TEST meh
+    def dependency(self, token_verex):
+        return self._dependencies[token_verex]
+
+    def dependencies(self, dependency):
         for target, dependency_ in self._dependencies.items():
             if dependency_ == dependency:
                 yield DependencyEdge(dependency, self._governors[target], target)
 
-    def siblings_of(self, token_vertex):  # todo: TEST meh
+    def siblings_of(self, token_vertex):
         return {vertex for vertex in self._dependents[self._governors[token_vertex]]
                 if vertex != token_vertex}
 
     def is_ancestor(self, descendant, ancestor): # todo: TEST meh
+        raise NotImplementedError('Method under development. ')
         parent = descendant
         while parent in self._governors:
             parent = self._governors[parent]
@@ -517,6 +527,7 @@ class DependencyTree:
         return False
 
     def common_ancestor(self, vertex1, vertex2): # todo: TEST meh
+        raise NotImplementedError('Method under development. ')
         parent1 = vertex1
         parent2 = vertex2
         while parent2 in self._governors:
