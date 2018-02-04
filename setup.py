@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pynlp',
-    version='0.3.4.2',
+    version='0.3.6',
     packages=['pynlp'],
     install_requires=[
         'corenlp-protobuf==3.7.1',

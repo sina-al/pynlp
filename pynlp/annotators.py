@@ -1,0 +1,5 @@
+TOKENIZE = 'tokenize'
+SSPLIT = 'ssplit'
+POS = 'pos'
+LEMMA = 'lemma'
+NER = 'ner'

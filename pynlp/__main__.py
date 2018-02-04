@@ -1,8 +1,9 @@
-from pynlp.config import SERVER_CLASS, DEFAULT_PORT, ENV_NAME
 from argparse import ArgumentParser
 from operator import add
 from functools import reduce
 import os
+
+ENV_NAME = 'CORE_NLP'
 
 
 def _args(properties):
@@ -10,10 +11,10 @@ def _args(properties):
     return reduce(add, map(parse, properties.keys()))
 
 
-def run_server(port=DEFAULT_PORT, memory=4, timeout=30000):
+def run_server(port=9000, memory=4, timeout=30000):
     java_arg = _args({'cp': '"' + os.environ[ENV_NAME] + '/*"', 'Xmx{}g'.format(memory): ''})
     core_arg = _args({'port': port, 'timeout': timeout})
-    os.system('java ' + java_arg + SERVER_CLASS + ' ' + core_arg)
+    os.system('java {} edu.stanford.nlp.pipeline.StanfordCoreNLPServer {}'.format(java_arg, core_arg))
 
 
 if __name__ == '__main__':
@@ -23,7 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--address', metavar='ADDR', help='server address',
                         default='localhost')
     parser.add_argument('-p', '--port', metavar='PORT', type=int,
-                        help='server port number.', default=DEFAULT_PORT)
+                        help='server port number.', default=9000)
     parser.add_argument('-m', '--memory', metavar='GB', type=int,
                         help='memory (gb) allocated to JVM.', default=4)
     parser.add_argument('-t', '--timeout', metavar='TIME', type=int,

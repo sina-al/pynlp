@@ -1,2 +1,8 @@
-# Created by .ignore support plugin (hsz.mobi)
-*.iml
+# IntelliJ
+.idea
+
+# Build
+build/
+dist/
+pynlp.egg-info/
+pynlp/__pycache__/
