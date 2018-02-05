@@ -39,13 +39,11 @@ class Document:
 
     @property
     def entities(self):
-        for proto_mention in self._doc.mentions:
-            yield NamedEntity(self._doc, proto_mention)
+        return [NamedEntity(self._doc, proto_mention) for proto_mention in self._doc.mentions]
 
     @property
     def coref_chains(self):
-        for proto_coref in self._doc.corefChain:
-            yield CorefChain(self._doc, proto_coref)
+        return [CorefChain(self._doc, proto_coref) for proto_coref in self._doc.corefChain]
 
     def coref_chain(self, chain_id):
         for proto_chain in self._doc.corefChain:
@@ -55,8 +53,7 @@ class Document:
 
     @property
     def quotes(self):
-        for proto_quote in self._doc.quote:
-            yield Quote(self._doc, proto_quote)
+        return [Quote(self._doc, proto_quote) for proto_quote in self._doc.quote]
 
 
 class Span(ABC):
@@ -101,13 +98,11 @@ class Sentence(Span):
 
     @property
     def tokens(self):
-        for proto_token in self._sentence.token:
-            yield Token(self._doc, self._sentence, proto_token)
+        return [Token(self._doc, self._sentence, proto_token) for proto_token in self._sentence.token]
 
     @property
     def entities(self):
-        for proto_mention in self._sentence.mentions:
-            yield NamedEntity(self._doc, proto_mention)
+        return [NamedEntity(self._doc, proto_mention) for proto_mention in self._sentence.mentions]
 
     @property
     def dependencies(self):
@@ -505,13 +500,12 @@ class DependencyTree:
     def dependents_of(self, token_vertex):
         return self._dependents[token_vertex]
 
-    def dependency(self, token_verex):
-        return self._dependencies[token_verex]
+    def dependency(self, token_vertex):
+        return self._dependencies[token_vertex]
 
     def dependencies(self, dependency):
-        for target, dependency_ in self._dependencies.items():
-            if dependency_ == dependency:
-                yield DependencyEdge(dependency, self._governors[target], target)
+        return [DependencyEdge(dependency, self._governors[target], target)
+                for target, dependency_ in self._dependencies.items() if dependency_ == dependency]
 
     def siblings_of(self, token_vertex):
         return {vertex for vertex in self._dependents[self._governors[token_vertex]]
