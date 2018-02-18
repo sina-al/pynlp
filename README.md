@@ -121,7 +121,7 @@ assaulted -> assault
 according -> accord
 ```
 #### Coreference resultion
-No coreference resolution available in spaCy? No problem. Let's use pynlp to find the first `CorefChain` in the text.
+Let's use pynlp to find the first `CorefChain` in the text.
 ```python
 chain = next(document.coref_chains)
 print(chain)
@@ -136,15 +136,22 @@ In the string representation, coreferences are marked with parenthesis and the r
 Each is also labelled with a `coref_id`. Let's have a closer look at the referent.
 ```python
 ref = chain.referent
-details = {'type': ref.type, 'number':ref.number, 'animacy': ref.animacy, 'gender':ref.gender}
-print(ref, details)
+print('Coreference: {}\n'.format(ref))
+
+for attr in 'type', 'number', 'animacy', 'gender':
+    print(attr,  getattr(ref, attr), sep=': ')
 
 # Note that we can also index coreferences by id
 assert chain[4].is_referent
 ```
 Output:
 ```
-GOP Sen. Rand Paul {'type': 'PROPER', 'number': 'SINGULAR', 'animacy': 'ANIMATE', 'gender': 'NEUTRAL'}
+Coreference: Police
+
+type: PROPER
+number: SINGULAR
+animacy: ANIMATE
+gender: UNKNOWN
 ```
 
 #### Quotes
