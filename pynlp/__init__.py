@@ -1,1 +1,2 @@
-from .client import CoreNLP
+from .client import StanfordCoreNLP
+from .wrapper import Document
