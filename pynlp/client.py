@@ -1,11 +1,9 @@
 from .exceptions import CoreNLPServerError
-from .concurrent import ThreadPool
 from .serializers import PROTOBUF
 from .wrapper import Document
 from requests import Session
 import corenlp_protobuf
 import json
-import os
 
 
 _BOOL_MAP = {True: 'true', False: 'false'}
@@ -31,7 +29,9 @@ class Properties:
             self.serializer = output_serializer
 
         self.outputFormat = output_format
-        self.annotators = ', '.join(annotators)
+
+        if annotators:
+            self.annotators = ', '.join(annotators)
 
         for option, value in (options or {}).items():
             if option.split('.')[0] in annotators:
@@ -65,35 +65,27 @@ class CoreNLPClient(Session):
 
     def __init__(self, properties: Properties):
         super().__init__()
-        self._properties = properties
+        self._handler = None
+        if properties.outputFormat == 'serialized':
+            if properties.serializer == PROTOBUF:
+                self._handler = '_protobuf'
+            else:
+                raise NotImplementedError('serializer not supported: "{}"'.format(properties.serializer))
+        elif properties.outputFormat == 'json':
+            self._handler = '_json'
+        else:
+            raise NotImplementedError('outputFormat not supported: "{}"'.format(properties.outputFormat))
+        assert self._handler
 
     def request(self, *args, **kwargs):
-        return self._handle(super(CoreNLPClient, self).request(*args, **kwargs))
+        response = super(CoreNLPClient, self).request(*args, **kwargs)
+        return self._handle(response)
 
     def _handle(self, response):
-
-        if not response.ok:
-            return self._bad_response(response)
-
-        output_format = self._properties.outputFormat
-
-        if output_format == 'serialized':
-
-            serializer = self._properties.serializer
-
-            if self._properties.serializer == PROTOBUF:
-
-                return self._protobuf(response)
-
-            else:
-                raise NotImplementedError('serializer not supported: "{}"'.format(serializer))
-
-        elif output_format == 'json':
-
-            return self._json(response)
-
+        if response.ok:
+            return getattr(self, self._handler)(response)
         else:
-            raise NotImplementedError('outputFormat not supported: "{}"'.format(output_format))
+            return self._bad_response(response)
 
     @staticmethod
     def _bad_response(response):
@@ -123,10 +115,12 @@ class CoreNLPClient(Session):
         return response.text
 
 
-class CoreNLP:
+class StanfordCoreNLP:
 
     def __init__(self, host='127.0.0.1', port=9000, annotators=None, options=None):
-        self._properties = Properties.text_to_protobuf(annotators.split(','), options)
+        if annotators:
+            annotators = annotators.split(',')
+        self._properties = Properties.text_to_protobuf(annotators, options)
         self._address = "http://{}:{}/".format(host, port)
         self._client = CoreNLPClient(self._properties)
 
@@ -137,10 +131,7 @@ class CoreNLP:
         self.close()
 
     def __call__(self, texts, **kwargs):
-        if isinstance(texts, list):
-            return self.annotate_many(texts, n_threads=kwargs['n_threads'])
-        elif isinstance(texts, str):
-            return self.annotate_one(texts)
+        return self.annotate_one(texts)
 
     def _annotate(self, text):
         return self._client.post(url=self._address, data=text, params=(('properties', str(self._properties)),))
@@ -148,19 +139,18 @@ class CoreNLP:
     def annotate_one(self, text):
         return Document(self._annotate(text))
 
-    def annotate_many(self, texts, n_threads=None):
-
-        pool = ThreadPool(n_threads or os.cpu_count())
-        annotations = []
-
-        def annotate(doc, batch):
-            batch.append(self.annotate_one(doc))
-
-        for text in texts:
-            pool.put(annotate, doc=text, batch=annotations)
-
-        pool.join()
-        return annotations
-
     def close(self):
         self._client.close()
+
+
+def stanford_corenlp(host='127.0.0.1', port=9000, annotators=None, options=None):
+    if annotators:
+        annotators = annotators.split(',')
+    props = Properties.text_to_protobuf(annotators, options)
+    client = CoreNLPClient(props)
+
+    def nlp(text):
+        return client.post(url="http://{}:{}/".format(host, port),
+                           params=(('properties', str(props)),),
+                           data=text,)
+    return nlp
