@@ -6,7 +6,6 @@ setup(
     packages=['pynlp'],
     install_requires=[
         'corenlp-protobuf==3.8',
-        'protobuf==3.5.1',
         'requests==2.18.4'
     ],
     url='http://github.com/sina-al/pynlp',
