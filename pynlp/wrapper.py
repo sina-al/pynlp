@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from . import protobuf
 
 
 class Document:
@@ -19,19 +19,34 @@ class Document:
             self._doc.sentence[-1].token[-1].tokenEndIndex
         )
 
+    def __iter__(self):
+        return (Sentence(self._doc, proto_sentence) for proto_sentence in self._doc.sentence)
+
     def __getitem__(self, item):
-        if isinstance(item, int) and item >= 0:
-            return Sentence(self._doc, self._doc.sentence[item])
+        return Sentence(self._doc, self._doc.sentence[item])
 
     def __eq__(self, other):
         return self._doc == other._doc
 
-    @classmethod
-    def from_bytes(cls, protobuf):
-        raise NotImplementedError('Method under development') # todo
+    def __bytes__(self):
+        return self.to_bytes()
+
+    @property
+    def sentences(self):
+        return (Sentence(self._doc, proto_sentence) for proto_sentence in self._doc.sentence)
+
+    @property
+    def tokens(self):
+        return (Token(self._doc, proto_sentence, proto_token)
+                for proto_sentence in self._doc.sentence
+                for proto_token in proto_sentence.token)
 
     def to_bytes(self):
-        return NotImplementedError('Method under development') # todo
+        return protobuf.to_bytes(self._doc)
+
+    @classmethod
+    def from_bytes(cls, bytes_):
+        return cls(protobuf.from_bytes(bytes_))
 
     @property
     def text(self):
@@ -56,28 +71,17 @@ class Document:
         return [Quote(self._doc, proto_quote) for proto_quote in self._doc.quote]
 
 
-class Span(ABC):
-
-    def __init__(self, proto_doc):
-        self._doc = proto_doc
-
-    @abstractmethod
-    def __getitem__(self, item):
-        pass
-
-
-class Sentence(Span):
+class Sentence:
 
     def __init__(self, proto_doc, proto_sentence):
-        super().__init__(proto_doc)
+        self._doc = proto_doc
         self._sentence = proto_sentence
 
     def __str__(self):
-        return ''.join([(t.originalText + t.after)
-                        for t in self._sentence.token])
+        return ''.join([(t.originalText + t.after) for t in self._sentence.token])
 
     def __len__(self):
-        return len(self._sentence)
+        return len(self._sentence.token)
 
     def __repr__(self):
         return '<{} : [index: {}, tokens: {}]>'.format(
@@ -88,6 +92,9 @@ class Sentence(Span):
 
     def __eq__(self, other):
         return self._sentence == other._sentence and self._doc == other._doc
+
+    def __iter__(self):
+        return (Token(self._doc, self._sentence, proto_token) for proto_token in self._sentence.token)
 
     def __getitem__(self, item):
         return Token(self._doc, self._sentence, self._sentence.token[item])
@@ -105,38 +112,25 @@ class Sentence(Span):
         return [NamedEntity(self._doc, proto_mention) for proto_mention in self._sentence.mentions]
 
     @property
-    def dependencies(self):
-        basic_dep = self._sentence.basicDependencies
-        return DependencyTree(self._doc, self._sentence, basic_dep)
-
-    @property
-    def e_dependencies(self):
-        enhanced_dep = self._sentence.enhancedDependencies
-        return DependencyTree(self._doc, self._sentence, enhanced_dep)
-
-    @property
-    def epp_dependencies(self):
-        enhanced_dep_plusplus = self._sentence.enhancedPlusPlusDependencies
-        return DependencyTree(self._doc, self._sentence, enhanced_dep_plusplus)
-
-    @property
-    def coref_mentions(self):
-        # todo: implement this
-        raise NotImplementedError('Method under development.')
-
-    @property
     def sentiment(self):
         return self._sentence.sentiment
 
     @property
-    def relations(self):
-        # todo: implement this
+    def coref_mentions(self):
+        # todo: implement coref mention (mentionsForCoref)
         raise NotImplementedError('Method under development.')
 
-    @property # parseTree, annotatedParseTree, binarizedParseTree
-    def parse_tree(self):
-        # todo: implement this (ParseTree class?)
+    @property
+    def relations(self):
+        # todo: implement relations
         raise NotImplementedError('Method under development.')
+
+    @property  # parseTree, annotatedParseTree, binarizedParseTree
+    def parse_tree(self):
+        # todo: implement parse tree (ParseTree class?)
+        raise NotImplementedError('Method under development.')
+
+    # todo: implement dependencies & e & epp
 
 
 class Token:
@@ -169,6 +163,10 @@ class Token:
     @property
     def word(self):
         return self._token.word
+
+    @property
+    def ws(self):
+        return self._token.after
 
     @property
     def word_ws(self):
@@ -231,15 +229,15 @@ class Root(Token):
         return 'ROOT'
 
 
-class NamedEntity(Span):
+class NamedEntity:
 
     def __init__(self, proto_doc, proto_mention):
-        super().__init__(proto_doc)
+        self._doc = proto_doc
         self._mention = proto_mention
-        self._sentence = proto_doc.sentence[proto_mention.sentenceIndex]
-        self._tokens = [token for token in self._sentence.token
-                        if token.tokenBeginIndex >= self._mention.tokenStartInSentenceInclusive
-                        and token.tokenEndIndex <= self._mention.tokenEndInSentenceExclusive]
+        self._sentence = self._doc.sentence[self._mention.sentenceIndex]
+        token_span = range(self._mention.tokenStartInSentenceInclusive,
+                           self._mention.tokenEndInSentenceExclusive - 1)
+        self._tokens = [token for token, _ in zip(self._sentence.token, token_span)]
 
     def __str__(self):
         return ' '.join([token.originalText for token in self._tokens])
@@ -310,16 +308,7 @@ class CorefChain:
         return string
 
     def __iter__(self):
-        return self
-
-    def __next__(self):
-        try :
-            i = self._index
-            self._index += 1
-            return Coreference(self._doc, self._coref, self._coref.mention[self._index])
-        except IndexError:
-            self._index = 0
-            raise StopIteration
+        return (Coreference(self._doc, self._coref, mention) for mention in self._coref.mention)
 
     def __getitem__(self, item):
         if not isinstance(item, int):
@@ -339,16 +328,15 @@ class CorefChain:
         return Coreference(self._doc, self._coref, proto_coref_mention)
 
 
-class Coreference(Span):
+class Coreference:
 
     def __init__(self, proto_doc, proto_coref_chain, proto_coref_mention):
-        super().__init__(proto_doc)
+        self._doc = proto_doc
         self._coref_chain = proto_coref_chain
         self._coref_mention = proto_coref_mention
         sentence_index = proto_coref_mention.sentenceIndex
-        self._tokens = [token for token in proto_doc.sentence[sentence_index].token
-                        if token.beginIndex >= self._coref_mention.beginIndex
-                        and token.endIndex <= self._coref_mention.endIndex]
+        token_span = range(self._coref_mention.beginIndex, self._coref_mention.endIndex)
+        self._tokens = [proto_doc.sentence[sentence_index].token[token_index] for token_index in token_span]
 
     def __repr__(self):
         ref_id = self._coref_chain.mention[self._coref_chain.representative].mentionID
@@ -398,10 +386,10 @@ class Coreference(Span):
         return self._coref_mention.head
 
 
-class Quote(Span):
+class Quote:
 
     def __init__(self, proto_doc, proto_quote):
-        super().__init__(proto_doc)
+        self._doc = proto_doc
         self._quote = proto_quote
 
     def __repr__(self):
@@ -424,122 +412,4 @@ class Quote(Span):
     @property
     def text(self):
         return self._quote.text[1:-1]
-
-
-class Triple:
-
-    def __init__(self, proto_doc, proto_sentence, proto_triple):
-        self._doc = proto_doc
-        self._sentence = proto_sentence
-        self._triple = proto_triple
-    # todo
-
-
-class DependencyEdge:
-
-    def __init__(self, dependency, gov_vertex, dep_vertex):
-        self._dependency = dependency
-        self._governor = gov_vertex
-        self._dependent = dep_vertex
-
-    def __str__(self):
-        return '({})-[{}]->({})'.format(str(self._governor),
-                                        self._dependency,
-                                        str(self._dependent))
-
-    @property
-    def dependency(self):
-        return self._dependency
-
-    @property
-    def governor(self):
-        return self._governor
-
-    @property
-    def dependent(self):
-        return self._dependent
-
-
-class DependencyTree:
-
-    def __init__(self, proto_doc, proto_sentence, proto_dependency):
-        self._doc = proto_doc
-        self._sentence = proto_sentence
-        self._dependency = proto_dependency
-        root = Root(self._doc, self._sentence)
-        root_gov = proto_sentence.token[proto_dependency.root[0] - 1]
-        root_dep = Token(self._doc, self._sentence, root_gov)
-        self._governors = {root_dep: root}
-        self._dependents = {}
-        self._dependencies = {root_dep: '-ROOT-'}
-        tokens = proto_sentence.token
-        for proto_edge in proto_dependency.edge:
-            source = Token(proto_doc, proto_sentence, tokens[proto_edge.source - 1])
-            target = Token(proto_doc, proto_sentence, tokens[proto_edge.target - 1])
-            self._governors[target] = source
-            self._dependencies[target] = proto_edge.dep
-            self._dependents.setdefault(source, []).append(target)
-        for key in self._dependents:
-            self._dependents[key] = frozenset(self._dependents[key])
-        self._dependents[root] = [root_dep]
-        self._root = root_dep
-
-    def __repr__(self):
-        return '<{}: [sentence: {}]>'.format(
-            self.__class__.__name__,
-            self._sentence.sentenceIndex
-        )
-
-    @property
-    def root(self):
-        return self._root
-
-    def governor_of(self, token_vertex):
-        return self._governors[token_vertex]
-
-    def dependents_of(self, token_vertex):
-        return self._dependents[token_vertex]
-
-    def dependency(self, token_vertex):
-        return self._dependencies[token_vertex]
-
-    def dependencies(self, dependency):
-        return [DependencyEdge(dependency, self._governors[target], target)
-                for target, dependency_ in self._dependencies.items() if dependency_ == dependency]
-
-    def siblings_of(self, token_vertex):
-        return {vertex for vertex in self._dependents[self._governors[token_vertex]]
-                if vertex != token_vertex}
-
-    def is_ancestor(self, descendant, ancestor): # todo: TEST meh
-        raise NotImplementedError('Method under development. ')
-        parent = descendant
-        while parent in self._governors:
-            parent = self._governors[parent]
-            if parent == ancestor:
-                return True
-        return False
-
-    def common_ancestor(self, vertex1, vertex2): # todo: TEST meh
-        raise NotImplementedError('Method under development. ')
-        parent1 = vertex1
-        parent2 = vertex2
-        while parent2 in self._governors:
-            while parent1 in self._governors:
-                parent1 = self._governors[parent1]
-                if parent1 == parent2:
-                    return parent2
-            parent2 = self._governors[parent2]
-        return None
-
-    @property
-    def vertices(self):
-        return [vertex for vertex in self._governors.keys()]
-
-    @property
-    def edges(self):
-        return [DependencyEdge(self._dependencies[target], self._governors[target], target)
-                for target in self._governors.keys()]
-
-
 
