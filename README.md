@@ -32,7 +32,7 @@ Let's start off with an excerpt from a CNN article.
 text = ('GOP Sen. Rand Paul was assaulted in his home in Bowling Green, Kentucky, on Friday, '
         'according to Kentucky State Police. State troopers responded to a call to the senator\'s '
         'residence at 3:21 p.m. Friday. Police arrested a man named Rene Albert Boucher, who they '
-        'allege "intentionally assaulted" Paul, causing him "minor injury. Boucher, 59, of Bowling '
+        'allege "intentionally assaulted" Paul, causing him "minor injury". Boucher, 59, of Bowling '
         'Green was charged with one count of fourth-degree assault. As of Saturday afternoon, he '
         'was being held in the Warren County Regional Jail on a $5,000 bond.')
 ```
@@ -66,7 +66,7 @@ Output:
 ```
 0) GOP Sen. Rand Paul was assaulted in his home in Bowling Green, Kentucky, on Friday, according to Kentucky State Police.
 1) State troopers responded to a call to the senator's residence at 3:21 p.m. Friday.
-2) Police arrested a man named Rene Albert Boucher, who they allege "intentionally assaulted" Paul, causing him "minor injury.
+2) Police arrested a man named Rene Albert Boucher, who they allege "intentionally assaulted" Paul, causing him "minor injury".
 3) Boucher, 59, of Bowling Green was charged with one count of fourth-degree assault.
 4) As of Saturday afternoon, he was being held in the Warren County Regional Jail on a $5,000 bond.
 ```
@@ -155,6 +155,8 @@ list(document.quotes)
 Output:
 ```
 Out[8]: [<Quote: "intentionally assaulted">]
+Out[9]: [<Quote: "minor injury">]
+
 ```
 
 *More to come soon...*
