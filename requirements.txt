@@ -1,4 +1,4 @@
-corenlp-protobuf==3.7.1
-protobuf==3.4.0
+corenlp-protobuf==3.8
+protobuf==3.5.1
 requests==2.18.4
 six==1.11.0
