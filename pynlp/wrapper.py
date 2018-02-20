@@ -235,9 +235,9 @@ class NamedEntity:
         self._doc = proto_doc
         self._mention = proto_mention
         self._sentence = self._doc.sentence[self._mention.sentenceIndex]
-        token_span = range(self._mention.tokenStartInSentenceInclusive,
-                           self._mention.tokenEndInSentenceExclusive - 1)
-        self._tokens = [token for token, _ in zip(self._sentence.token, token_span)]
+        self._tokens = [token for token in self._sentence.token
+                        if token.tokenBeginIndex >= self._mention.tokenStartInSentenceInclusive
+                        and token.tokenEndIndex <= self._mention.tokenEndInSentenceExclusive]
 
     def __str__(self):
         return ' '.join([token.originalText for token in self._tokens])
