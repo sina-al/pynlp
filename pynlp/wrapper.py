@@ -264,6 +264,9 @@ class NamedEntity:
     def normalized_ner(self):
         return self._mention.normalizedNER
 
+    @property
+    def wiki_link(self):
+        return self._mention.wikipediaEntity
 
 class CorefChain:
 
