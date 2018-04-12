@@ -2,10 +2,10 @@ from setuptools import setup
 
 setup(
     name='pynlp',
-    version='0.3.7',
+    version='0.3.8',
     packages=['pynlp'],
     install_requires=[
-        'corenlp-protobuf==3.8',
+        # 'corenlp-protobuf==3.8',
         'requests==2.18.4'
     ],
     url='http://github.com/sina-al/pynlp',

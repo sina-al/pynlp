@@ -416,3 +416,11 @@ class Quote:
     def text(self):
         return self._quote.text[1:-1]
 
+    @property
+    def speaker(self):
+        return self._quote.speaker
+
+    @property
+    def canonical_speaker(self):
+        return self._quote.canonicalMention
+
