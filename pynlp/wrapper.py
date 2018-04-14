@@ -413,6 +413,10 @@ class Quote:
             ))
 
     @property
+    def quote(self):
+        return self._quote.text
+
+    @property
     def text(self):
         return self._quote.text[1:-1]
 
