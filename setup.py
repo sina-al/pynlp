@@ -4,7 +4,7 @@ setup(
     name='pynlp',
     version='0.3.9',
     packages=['pynlp'],
-    install_requires=['requests'],
+    install_requires=['requests', 'protobuf'],
     url='http://github.com/sina-al/pynlp',
     license='MIT',
     author='Sina',
