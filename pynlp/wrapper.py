@@ -1,4 +1,4 @@
-from . import protobuf
+from pynlp.protobuf import from_bytes, to_bytes
 
 
 class Document:
@@ -42,11 +42,11 @@ class Document:
                 for proto_token in proto_sentence.token)
 
     def to_bytes(self):
-        return protobuf.to_bytes(self._doc)
+        return to_bytes(self._doc)
 
     @classmethod
     def from_bytes(cls, bytes_):
-        return cls(protobuf.from_bytes(bytes_))
+        return cls(from_bytes(bytes_))
 
     @property
     def text(self):

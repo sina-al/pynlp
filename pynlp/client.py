@@ -2,7 +2,7 @@ from .exceptions import CoreNLPServerError
 from .serializers import PROTOBUF
 from .wrapper import Document
 from requests import Session
-import corenlp_protobuf
+import pynlp.protobuf
 import json
 
 
@@ -95,9 +95,7 @@ class CoreNLPClient(Session):
 
     @staticmethod
     def _protobuf(response):
-        proto_doc = corenlp_protobuf.Document()
-        corenlp_protobuf.parseFromDelimitedString(proto_doc, response.content)
-        return proto_doc
+        return pynlp.protobuf.from_bytes(response.content)
 
     @staticmethod
     def _json(response):
