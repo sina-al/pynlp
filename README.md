@@ -157,12 +157,11 @@ gender: UNKNOWN
 #### Quotes
 Extracting quotes from the text is simple.
 ```python
-document.quotes
+print(document.quotes)
 ```
 Output:
 ```
-Out[8]: [<Quote: "intentionally assaulted">,
-         <Quote: "minor injury">]
+[<Quote: "intentionally assaulted">, <Quote: "minor injury">]
 ```
 
 #### TODO (annotation wrappers):
