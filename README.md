@@ -16,7 +16,7 @@ This library provides a Python interface to [Stanford CoreNLP](https://stanfordn
 pip3 install pynlp
 ```
 
-## Usage
+## Quick Start
 
 ### Launch the server
 Lauch the `StanfordCoreNLPServer` using the instruction given [here](https://stanfordnlp.github.io/CoreNLP/corenlp-server.html). *Alternatively*, simply run the module.
@@ -25,7 +25,7 @@ python3 -m pynlp
 ```
 *By default, this lauches the server on localhost using port 9000 and 4gb ram for the JVM. Use the `--help` option for instruction on custom configurations.*
 
-### Example usage
+### Example
 
 Let's start off with an excerpt from a CNN article.
 ```python
@@ -165,4 +165,36 @@ Out[8]: [<Quote: "intentionally assaulted">,
          <Quote: "minor injury">]
 ```
 
-*More to come soon...*
+#### TODO (annotation wrappers):
+- [x] ssplit
+- [ ] ner
+- [x] pos
+- [x] lemma
+- [x] coref
+- [x] quote
+- [ ] quote.attribution
+- [ ] parse
+- [ ] depparse
+- [x] entitymentions
+- [ ] openie
+- [ ] sentiment
+- [ ] relation
+- [ ] kbp
+- [ ] entitylink
+- [ ] 'options' examples i.e openie.resolve_coref
+
+### Saving annotations
+#### Write
+A pynlp document can be saved as a byte string.
+```python
+with open('annotation.dat', 'wb') as file:
+    file.write(document.to_bytes())
+```
+#### Read
+To load a pynlp document, instantiate a `Document` with the `from_bytes` class method.
+```python
+from pynlp import Document
+
+with open('annotation.dat', 'rb') as file:
+    document = Document.from_bytes(file.read())
+```
