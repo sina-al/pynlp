@@ -44,7 +44,7 @@ Here we demonstrate the following annotators:
 from pynlp import StanfordCoreNLP
 
 annotators = 'tokenize, ssplit, pos, lemma, ner, entitymentions, coref, sentiment, quote, openie'
-options = {'openie.resolve_coref': 'true'}
+options = {'openie.resolve_coref': True}
 
 nlp = StanfordCoreNLP(annotators=annotators, options=options)
 
@@ -123,7 +123,7 @@ according -> accord
 #### Coreference resultion
 Let's use pynlp to find the first `CorefChain` in the text.
 ```python
-chain = next(document.coref_chains)
+chain = document.coref_chains[0]
 print(chain)
 ```
 Output:
@@ -157,13 +157,12 @@ gender: UNKNOWN
 #### Quotes
 Extracting quotes from the text is simple.
 ```python
-list(document.quotes)
+document.quotes
 ```
 Output:
 ```
-Out[8]: [<Quote: "intentionally assaulted">]
-Out[9]: [<Quote: "minor injury">]
-
+Out[8]: [<Quote: "intentionally assaulted">,
+         <Quote: "minor injury">]
 ```
 
 *More to come soon...*
