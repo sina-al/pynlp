@@ -71,37 +71,20 @@ class TestStanfordCoreNLP(unittest.TestCase):
     def test_ner(self):
         actual = [token.ner for token in self.first_sentence]
         expected = [
-            'ORGANIZATION', 'O', 'PERSON', 'PERSON', 'O', 'O', 'O', 'O', 'O', 'O', 'CITY', 'CITY',
-            'O', 'STATE_OR_PROVINCE', 'O', 'O', 'DATE', 'O', 'O', 'O', 'ORGANIZATION', 'ORGANIZATION',
-            'ORGANIZATION', 'O'
+            'ORGANIZATION', 'O', 'PERSON', 'PERSON', 'O', 'O', 'O', 'O', 'O', 'O', 'LOCATION', 'LOCATION',
+            'O', 'LOCATION', 'O', 'O', 'DATE', 'O', 'O', 'O', 'ORGANIZATION', 'ORGANIZATION', 'ORGANIZATION', 'O'
         ]
+
         self.assertListEqual(expected, actual)
 
     def test_entitymentions(self):
         actual = [(entity.type, str(entity)) for entity in self.document.entities]
         expected = [
-            ('ORGANIZATION', 'GOP'),
-            ('PERSON', 'Rand Paul'),
-            ('CITY', 'Bowling Green'),
-            ('STATE_OR_PROVINCE', 'Kentucky'),
-            ('DATE', 'Friday'),
-            ('ORGANIZATION', 'Kentucky State Police'),
-            ('PERSON', 'his'),
-            ('TITLE', 'senator'),
-            ('TIME', '3:21 p.m.'),
-            ('DATE', 'Friday'),
-            ('PERSON', 'Rene Albert Boucher'),
-            ('PERSON', 'Paul'),
-            ('PERSON', 'him'),
-            ('PERSON', 'Boucher'),
-            ('NUMBER', '59'), ('NUMBER', 'one'),
-            ('TITLE', 'count'),
-            ('CRIMINAL_CHARGE', 'assault'),
-            ('DATE', 'Saturday'),
-            ('TIME', 'afternoon'),
-            ('CITY', 'Warren'),
-            ('LOCATION', 'County'),
-            ('MONEY', '$ 5,000'),
-            ('PERSON', 'he')
+            ('ORGANIZATION', 'GOP'), ('PERSON', 'Rand Paul'), ('LOCATION', 'Bowling Green'),
+            ('LOCATION', 'Kentucky'), ('DATE', 'Friday'), ('ORGANIZATION', 'Kentucky State Police'),
+            ('TIME', '3:21 p.m.'), ('DATE', 'Friday'), ('PERSON', 'Rene Albert Boucher'), ('PERSON', 'Paul'),
+            ('PERSON', 'Boucher'), ('NUMBER', '59'), ('NUMBER', 'one'), ('DATE', 'Saturday'),
+            ('TIME', 'afternoon'), ('LOCATION', 'Warren County'), ('MONEY', '$ 5,000')
         ]
+
         self.assertListEqual(expected, actual)
