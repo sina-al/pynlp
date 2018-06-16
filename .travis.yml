@@ -10,7 +10,7 @@ env:
     - CORENLP_ARCHIVE_VERSION=2018-01-31
 
 before_install:
-  - docker run --rm -p 9000:9000 konradstrack/corenlp
+  - docker run -d -p 9000:9000 konradstrack/corenlp
 
 python:
   - "3.3"
