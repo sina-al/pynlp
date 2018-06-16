@@ -21,6 +21,7 @@ class TestStanfordCoreNLP(unittest.TestCase):
         )
         cls.document = nlp.annotate_one(text=test.data.TEXT)
         cls.first_sentence = cls.document[0]
+        nlp.close()
 
     def test_ssplit(self):
         actual = [str(token) for token in self.document]
