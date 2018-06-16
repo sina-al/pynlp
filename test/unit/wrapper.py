@@ -2,14 +2,14 @@ import unittest
 from pynlp import protobuf, wrapper
 
 
-TEST_DATA = 'data-1.dat'
+TEST_DATA = './test/data/data-1.dat'
 
 
 class TestDocument(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with open('../data/{}'.format(TEST_DATA), 'rb') as file:
+        with open(TEST_DATA, 'rb') as file:
             cls.proto_doc = protobuf.from_bytes(file.read())
 
     def setUp(self):
@@ -68,7 +68,7 @@ class TestSentence(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with open('../data/{}'.format(TEST_DATA), 'rb') as file:
+        with open(TEST_DATA, 'rb') as file:
             cls.proto_doc = protobuf.from_bytes(file.read())
             cls.proto_sentence = cls.proto_doc.sentence[0]
 
@@ -114,7 +114,7 @@ class TestToken(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with open('../data/{}'.format(TEST_DATA), 'rb') as file:
+        with open(TEST_DATA, 'rb') as file:
             cls.proto_doc = protobuf.from_bytes(file.read())
             cls.proto_sentence = cls.proto_doc.sentence[0]
 
@@ -179,7 +179,7 @@ class TestNamedEntity(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with open('../data/{}'.format(TEST_DATA), 'rb') as file:
+        with open(TEST_DATA, 'rb') as file:
             cls.proto_doc = protobuf.from_bytes(file.read())
 
     def setUp(self):
@@ -204,29 +204,6 @@ class TestNamedEntity(unittest.TestCase):
 # todo: test corefchain
 # todo: test coreference
 # todo: test quote
-
-
-class TestDependencyEdge(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.edge = wrapper.DependencyEdge(
-            gov_vertex='test',
-            dependency='dobj',
-            dep_vertex='code',
-        )
-
-    def test_dependency(self):
-        self.assertEqual(self.edge.dependency, 'dobj')
-
-    def test_dependent(self):
-        self.assertEqual(self.edge.dependent, 'code')
-
-    def test_governor(self):
-        self.assertEqual(self.edge.governor, 'test')
-
-    def test_str(self):
-        self.assertEqual(str(self.edge), '(test)-[dobj]->(code)')
 
 
 if __name__ == '__main__':

@@ -1,8 +1,11 @@
 # IntelliJ
 .idea
 
+# Cache
+*/__pycache__
+*.pyc
+
 # Build
 build/
 dist/
 pynlp.egg-info/
-pynlp/__pycache__/
