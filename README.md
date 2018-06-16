@@ -1,4 +1,7 @@
 # pynlp
+[![Build Status](https://travis-ci.org/sina-al/pynlp.svg?branch=master)](https://travis-ci.org/sina-al/pynlp)
+[![PyPI version](https://badge.fury.io/py/pynlp.svg)](https://badge.fury.io/py/pynlp)
+
 A *pythonic* wrapper for Stanford CoreNLP.
 
 <p align="center">
