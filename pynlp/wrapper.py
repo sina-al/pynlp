@@ -33,13 +33,13 @@ class Document:
 
     @property
     def sentences(self):
-        return (Sentence(self._doc, proto_sentence) for proto_sentence in self._doc.sentence)
+        return [Sentence(self._doc, proto_sentence) for proto_sentence in self._doc.sentence]
 
     @property
     def tokens(self):
-        return (Token(self._doc, proto_sentence, proto_token)
+        return [Token(self._doc, proto_sentence, proto_token)
                 for proto_sentence in self._doc.sentence
-                for proto_token in proto_sentence.token)
+                for proto_token in proto_sentence.token]
 
     def to_bytes(self):
         return to_bytes(self._doc)
@@ -122,8 +122,9 @@ class Sentence:
 
     @property
     def relations(self):
-        # todo: implement relations
-        raise NotImplementedError('Method under development.')
+        return [Relation(self._doc, self._sentence, relation)
+                for relation in self._sentence.relation
+                if relation.type != '_NR']
 
     @property  # parseTree, annotatedParseTree, binarizedParseTree
     def parse_tree(self):
@@ -267,6 +268,7 @@ class NamedEntity:
     @property
     def wiki_link(self):
         return self._mention.wikipediaEntity
+
 
 class CorefChain:
 
@@ -428,3 +430,86 @@ class Quote:
     def canonical_speaker(self):
         return self._quote.canonicalMention
 
+
+class Relation:
+
+    def __init__(self, proto_doc, proto_sentence, proto_relation):
+        self._doc = proto_doc
+        self._sentence = proto_sentence
+        self._relation = proto_relation
+
+    @property
+    def relation(self):
+        return self._relation.type
+
+    @property
+    def mentions(self):
+        mention_0 = RelationMention(self._doc,
+                                    self._sentence,
+                                    self._relation,
+                                    self._relation.arg[0])
+        mention_1 = RelationMention(self._doc,
+                                    self._sentence,
+                                    self._relation,
+                                    self._relation.arg[1])
+        return mention_0, mention_1
+
+    def __str__(self):
+        mentions = self.mentions
+        relation = self.relation
+        return '({})-[{}]-({})'.format(
+            mentions[0].text, relation, mentions[1].text
+        )
+
+    def __repr__(self):
+        return '<{}:{}>'.format(__class__.__name__, str(self))
+
+
+class RelationMention:
+
+    def __init__(self,
+                 proto_doc,
+                 proto_sentence,
+                 proto_relation,
+                 proto_relation_mention):
+
+        self._doc = proto_doc
+        self._sentence = proto_sentence
+        self._relation = proto_relation
+        self._relation_mention = proto_relation_mention
+
+    @property
+    def type(self):
+        return self._relation_mention.type
+
+    @property
+    def text(self):
+        start = self._relation_mention.extentStart
+        end = self._relation_mention.extentEnd
+        tokens = [self._sentence.token[i] for i in range(start, end)]
+        text = []
+        for token in tokens:
+            text.append(token.originalText)
+            text.append(token.after)
+        return ''.join(text[:-1])
+
+    def __str__(self):
+        return self.text
+
+    def __repr__(self):
+        return '<{}: [type={}]>'.format(
+            __class__.__name__,
+            self.text,
+            self.type
+        )
+
+    def __getitem__(self, item):
+        if not isinstance(item, int):
+            raise KeyError('RelationMention tokens indexed by integer only.')
+        start = self._relation_mention.extentStart
+        end = self._relation_mention.extentEnd
+        if item >= end - start:
+            raise IndexError('RelationMention has only {} tokens'.format(end - start))
+        return Token(proto_doc=self._doc,
+                     proto_sentence=self._sentence,
+                     proto_token=self._sentence.token[start + item])
