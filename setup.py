@@ -8,7 +8,7 @@ def long_description():
 
 setup(
     name='pynlp',
-    version='0.4.0',
+    version='0.4.1',
     packages=['pynlp', 'pynlp.protobuf'],
     install_requires=['requests', 'protobuf'],
     url='http://github.com/sina-al/pynlp',

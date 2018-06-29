@@ -268,6 +268,51 @@ class NamedEntity:
     def wiki_link(self):
         return self._mention.wikipediaEntity
 
+    @property
+    def timex(self):
+        if self._mention.entityType in ('DATE', 'TIME'):
+            return Timex(self._mention.timex)
+
+
+class Timex:
+
+    def __init__(self, proto_timex):
+        self._timex = proto_timex
+
+    @property
+    def value(self):
+        return self._timex.value
+
+    @property
+    def text(self):
+        return self._timex.text
+
+    @property
+    def type(self):
+        return self._timex.type
+
+    @property
+    def tid(self):
+        return self._timex.tid
+
+    def __repr__(self):
+        return '<{}: [tid: {}, value: {}, type: {}]>'.format(
+            __class__.__name__,
+            self._timex.tid,
+            self._timex.value,
+            self._timex.type,
+        )
+
+    def __str__(self):
+        return self._timex.text
+
+    def __eq__(self, other):
+        return repr(self) == repr(other)
+
+    def __hash__(self):
+        return hash(repr(self))
+
+
 class CorefChain:
 
     def __init__(self, proto_doc, proto_coref):
