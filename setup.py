@@ -17,6 +17,7 @@ setup(
     author_email='s.aleyaasin@gmail.com',
     description='Python wrapper for Stanford CoreNLP',
     long_description=long_description(),
+    long_description_content_type="text/markdown",
     classifiers=(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
