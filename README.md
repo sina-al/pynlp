@@ -1,3 +1,16 @@
+
+
+<p align="center">
+        <small>⚠️ <b>Deprecation Notice</b> <em>  This package was created when <a href="https://stanfordnlp.github.io/stanza/">Stanza</a> was still in early development. 
+</p>
+<p align="center">
+        <small>
+                Use the officially supported python package for new projects
+        </small>
+</p>
+          
+---
+
 # pynlp
 [![Build Status](https://travis-ci.org/sina-al/pynlp.svg?branch=master)](https://travis-ci.org/sina-al/pynlp)
 [![PyPI version](https://badge.fury.io/py/pynlp.svg)](https://badge.fury.io/py/pynlp)
