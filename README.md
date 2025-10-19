@@ -1,11 +1,11 @@
 
 
 <p align="center">
-        <small>⚠️ <b>Deprecation Notice</b> <em>  This package was created when <a href="https://stanfordnlp.github.io/stanza/">Stanza</a> was still in early development. 
+        <small>⚠️ <b>Deprecation Notice</b> <em>  This package was created when <a href="https://stanfordnlp.github.io/stanza/">Stanza</a> was still in early development. </em> </small>
 </p>
 <p align="center">
         <small>
-                Use the officially supported python package for new projects
+                <em> Use the officially supported python package for new projects </em>
         </small>
 </p>
           
